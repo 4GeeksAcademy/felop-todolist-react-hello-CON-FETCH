@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTrash } from '@fortawesome/free-solid-svg-icons'
+
+
 
 const Home = () => {
   const [tasks, setTasks] = useState([]);
@@ -69,7 +69,7 @@ const Home = () => {
               className="remove-btn"
               onClick={() => removeTask(task.id)}
             >
-              <i className="fa-solid fa-trash-can"></i>
+            X
             </button>
           </li>
         ))}
