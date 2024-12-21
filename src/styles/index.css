@@ -1,11 +1,22 @@
+body{ 
+  background-color:gray;
+  display: flex;
+  justify-content: center; 
+  align-items: center;    
+  height:100vh;          
+  margin: 0;  
 
-.todo-app {
-    max-width: 400px;
+}
+
+.lista {
+    max-width: 600px;
     margin: 0 auto;
     padding: 20px;
     background-color:#fff3cd;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
+    
+       
   }
   
   .todo-input {
