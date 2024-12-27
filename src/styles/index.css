@@ -74,6 +74,18 @@ body{
   }
   
   .remove-btn {
-    background-color: transparent;
+    opacity: 0; 
+  visibility: hidden;
+  background-color: red;
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.todo-item:hover .remove-btn {
+  opacity: 1; 
+  visibility: visible;
+}
     
-}  

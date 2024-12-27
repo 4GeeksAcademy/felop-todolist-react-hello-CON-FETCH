@@ -49,7 +49,7 @@ const Home = () => {
             onKeyDown={handleKeyDown}
             placeholder="Add a new task"
           />
-          <button onClick={addTask}>Add</button>
+          <button  onClick={addTask}>Add</button>
         </div>
 
 
@@ -68,7 +68,7 @@ const Home = () => {
 
               <button
                 className="remove-btn"
-                onClick={() => removeTask(task.id)}
+                 onClick={() => removeTask(task.id)}
               >
                 X
               </button>
