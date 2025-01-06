@@ -5,34 +5,32 @@ import React, { useState,useEffect } from 'react';
 const Home = () => {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
-  const [userName, setUserName] = useState("mariajara299");
+  const [userName, setUserName] = useState("");
   const [turn, setTurn] = useState(false);
 
 
   const addTask = () => {
     if (newTask.trim() === '') return;
-    const updatedTask=[...tasks, { id: Date.now(), text: newTask, completed: false }];
-    setNewTask(updatedTask);syncTasks(updatedTasks);
+    const updatedTasks= [...tasks, { label: newTask, done: false }];
+    setTasks(updatedTasks);syncTasks(updatedTasks);
     setNewTask('');
   };
 
+  
+  
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      addTask();
-    }
+
+  const toggleTaskCompletion = (index) => {
+    const updatedTasks= tasks.map((task,i)=>
+      i===index?{...task,done: !task.done}:task
+  );
+  setTasks(updatedTasks);
+  syncTasks(updatedTasks);
   };
 
 
-  const toggleTaskCompletion = (taskId) => {
-    setTasks(tasks.map(task =>
-      task.id === taskId ? { ...task, completed: !task.completed } : task
-    ));
-  };
-
-
-  const removeTask = (taskId) => {
-    const updatedTasks = tasks.filter((_, index) => index !== taskId);
+  const removeTask = (index)=>{ 
+    const updatedTasks = tasks.filter((_, i) => i !== index);
     setTasks(updatedTasks);
     syncTasks(updatedTasks);
   };
@@ -43,25 +41,48 @@ const Home = () => {
 
   const handlerGetList = async () => {
     try {
-      const response = await fetch(`https://playground.4geeks.com/todo/users/${userName}`)
+      const response = await fetch(`https://playground.4geeks.com/todo/users/${userName}`);
       if (!response.ok) {
-        throw new Error("Se petateo");
+        if (response.status === 404) {
+          console.error("Usuario no encontrado.");
+          alert("El usuario no existe. Intenta con otro nombre.");
+        } else {
+          console.error("Error del servidor:", response.status);
+        }
+        return;
       }
-      let data = await response.json();
-      setTasks(data.todos)
-    } catch (error) {
-      console.error(error)
+  
+      const data = await response.json();
+      console.log("Datos recibidos:", data);
+  
+      // Si los datos son válidos, actualiza las tareas
+      if(Array.isArray(data.todos)){ 
+      setTasks(data.todos);
+    }else{ 
+      console.error("el formato de datos no es valido:",data);
     }
-  }
+    }catch (error) {
+      console.error("Error al obtener las tareas:", error);
+      setTasks([]);
+    }
+  };
   const handlerSearch = async () => {
     try {
-      if (userName.length < 2) {
+      if (userName.trim().length <2){ 
         alert("Metele mas manito")
         return
       }
-      setTurn(prev => !prev)
+      const response = await fetch(`https://playground.4geeks.com/todo/users/${userName}`);
+    
+    if (response.status === 404) {
+      // Si el usuario no existe, lo creamos
+      console.log("Usuario no encontrado. Creando usuario...");
+      await createUser();
+    }
+
+      setTurn(( prev)=>!prev);
     } catch (error) {
-      console.error(error);
+      console.error("Error al buscar o crear usuario:", error);
     }
   };
   
@@ -102,7 +123,7 @@ return (
     <div className="lista">
       <h1>To-Do List</h1>
 
-      <input type="text" id='usuario' placeholder='Escribe tu usuario aca ' onChange={(e) => setUserName(e.target.value)} />
+      <input type="text" id='usuario' placeholder='Escribe tu usuario aca ' value={userName}onChange={(e) => setUserName(e.target.value)}/>
       <button className='boton' onClick={handlerSearch}>Buscar</button>
 
       <div className="todo-input">
@@ -110,7 +131,7 @@ return (
           type="text"
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
-          onKeyDown={handleKeyDown}
+          onKeyDown={(e) => e.key === "Enter" && addTask()}
           placeholder="Add a new task"
         />
         <button onClick={addTask}>Add</button>
@@ -120,19 +141,19 @@ return (
       <ul className="todo-list">
         {tasks.map((task,index) => (
           <li
-            key={task.id}
+            key={index}
             className={`todo-item ${task.done ? 'completed' : ''}`}
           >
             <span
               className="todo-text"
-              onClick={() => toggleTaskCompletion(task.label)}
+              onClick={() => toggleTaskCompletion(index)}
             >
-              {task.text}
+              {task.label}
             </span>
 
             <button
               className="remove-btn"
-              onClick={() => removeTask(task.id)}
+              onClick={() => removeTask(index)}
             >
               X
             </button>
@@ -141,11 +162,14 @@ return (
       </ul>
 
 
-      {remainingTasks > 0 ? (
-        <p className="tasks-left">{remainingTasks} tasks left</p>
+      {tasks.length > 0 ? ( 
+        <p className="tasks-left">{tasks.filter((task) => !task.done).length}tasks left</p>
       ) : (
         <p className="no-tasks-message">No hay tareas, añadir tareas</p>
       )}
+       <button onClick={clearTasks} className="clear-btn">
+          Limpiar todas las tareas
+        </button>
     </div>
   </div>
 );
