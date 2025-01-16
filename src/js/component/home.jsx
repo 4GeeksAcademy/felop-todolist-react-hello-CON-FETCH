@@ -3,6 +3,8 @@ import React, { useState,useEffect } from 'react';
 
 
 const Home = () => {
+ const apiUrl = "https://playground.4geeks.com/todo"
+
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
   const [userName, setUserName] = useState("");
@@ -11,8 +13,7 @@ const Home = () => {
 
   const addTask = () => {
     if (newTask.trim() === '') return;
-    const updatedTasks= [...tasks, { label: newTask, done: false }];
-    setTasks(updatedTasks);syncTasks(updatedTasks);
+   createTask( { label: newTask, is_done: false })
     setNewTask('');
   };
 
@@ -29,14 +30,9 @@ const Home = () => {
   };
 
 
-  const removeTask = (index)=>{ 
-    const updatedTasks = tasks.filter((_, i) => i !== index);
-    setTasks(updatedTasks);
-    syncTasks(updatedTasks);
-  };
 
 
-  const remainingTasks = tasks.filter(task => !task.completed).length;
+  
 
 
   const handlerGetList = async () => {
@@ -77,7 +73,7 @@ const Home = () => {
     if (response.status === 404) {
       // Si el usuario no existe, lo creamos
       console.log("Usuario no encontrado. Creando usuario...");
-      await createUser();
+      await createUser(userName);
     }
 
       setTurn(( prev)=>!prev);
@@ -86,32 +82,63 @@ const Home = () => {
     }
   };
   
-  const syncTasks = async (updatedTasks) => {
+  const deleteTask = async (id) => {
     try {
-      const response = await fetch(`https://playground.4geeks.com/todo/users/${userName}`, {
-        method: "PUT",
-        body: JSON.stringify(updatedTasks),
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch(`${apiUrl}/todos/${id}`, {
+        method: "DELETE",
+        
       });
       if (!response.ok) throw new Error("Error al sincronizar tareas");
+      setTasks( tasks.filter((item ) => item.id !== id))
     } catch (error) {
       console.error(error);
     }
   };
 
-  const clearTasks = async () => {
+  const deleteAllTasks = async () => {
     try {
-      const response = await fetch(`https://playground.4geeks.com/todo/users/${userName}`, {
-        method: "PUT",
-        body: JSON.stringify([]),
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch(`${apiUrl}/users/${userName}`, {
+        method: "DELETE",
+        
       });
-      if (!response.ok) throw new Error("Error al limpiar tareas");
-      setTasks([]);
+      if (!response.ok) throw new Error("Error al sincronizar tareas");
+      setTasks([])
     } catch (error) {
       console.error(error);
     }
   };
+
+  const createTask = async (newTask) => {
+    try {
+      const response = await fetch(`${apiUrl}/todos/${userName}`, {
+        method: "POST",
+        body: JSON.stringify(newTask),
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) throw new Error("Error agregar nueva tarea");
+      setTasks(tasks.concat(newTask))
+      return true
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const createUser = async (name) => {
+    try {
+      const response = await fetch(`${apiUrl}/users/${userName}`, {
+        method: "POST",
+        
+        
+      });
+      if (!response.ok) throw new Error("Error al crear usuario ");
+       
+      return true
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  
 
 
   useEffect(() => {
@@ -153,7 +180,7 @@ return (
 
             <button
               className="remove-btn"
-              onClick={() => removeTask(index)}
+              onClick={() => deleteTask(task.id)}
             >
               X
             </button>
@@ -167,7 +194,7 @@ return (
       ) : (
         <p className="no-tasks-message">No hay tareas, añadir tareas</p>
       )}
-       <button onClick={clearTasks} className="clear-btn">
+       <button onClick={deleteAllTasks} className="clear-btn">
           Limpiar todas las tareas
         </button>
     </div>
